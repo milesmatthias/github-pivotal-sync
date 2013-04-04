@@ -8,8 +8,9 @@ class Github < Repo
     @api_token = config["api_token"]
     @repository = config["repository"]
 
-    github = open("https://github.com/api/v2/json/issues/list/#{@repository}/open",
-      :http_basic_authentication=>["#{@username}/token", @api_token]) do |f|
+    # http://developer.github.com/v3/issues/#list-issues-for-a-repository
+    github = open("https://api.github.com/repos/#{@repository}/issues",
+      :http_basic_authentication=>["#{@username}"]) do |f|
       JSON.parse(f.read)
     end
 
@@ -20,6 +21,7 @@ class Github < Repo
   end
   
   # Returns number of new issue
+  # http://developer.github.com/v3/issues/#create-an-issue
   def new_issue(title)
     result = YAML.load(RestClient.post("https://github.com/api/v2/yaml/issues/open/#{@repository}", :login => @username,
       :token => @api_token, :title => title))
@@ -27,6 +29,7 @@ class Github < Repo
   end
   
   # issues/edit/:user/:repo/:number
+  # http://developer.github.com/v3/issues/#edit-an-issue
   def edit_issue(id, title)
     RestClient.post("https://github.com/api/v2/yaml/issues/edit/#{@repository}/#{id}", :login => @username,
       :token => @api_token, :title => title)
